@@ -17,3 +17,9 @@ gem "pastel", "~> 0.8.0"
 gem "tty-link", "~> 0.1.1"
 
 gem "tty-font", "~> 0.5.0"
+
+group :development do
+  gem "ruby-lsp", "~> 0.14.5" 
+  gem "rubocop", "~> 1.62"
+end
+
