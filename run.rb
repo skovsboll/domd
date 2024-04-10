@@ -58,16 +58,27 @@ def replace(element)
   end
 end
 
-class Runner
-  def run(element, opts = { indent: 0 })
-    send("run_#{element.type}", element, opts)
+class RunnerConverter < TTY::Markdown::Converter
+  def convert_codeblock(el, opts)
+    r1 = super(el, opts)
+    r2 = run(el)
+    [r1, r2].join("\n => ")
+  end
+
+  def run(element)
+    lang, dialect, version = dialect(element.options[:lang])
+    version ||= 'latest'
+    fq_lang = "#{lang}@#{version}"
+    raw_code = element.value
+    File.write 'tmp.x', raw_code
+
+    `mise use #{fq_lang} && mise install && mise x -- tmp.#{lang}`
   end
 end
 
 doc = Kramdown::Document.new(File.read('buildme.md'), converter_options)
 doc.root.children = doc.root.children.flat_map { |element| replace(element) }
-binding.irb
-puts TTY::Markdown::Converter.convert(doc.root, doc.options).join
 
-# parsed = TTY::Markdown.parse_file('buildme.md')
-# puts parsed
+text, warnings = RunnerConverter.convert(doc.root, doc.options)
+
+puts text
